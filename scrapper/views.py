@@ -6,24 +6,64 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from django.http import JsonResponse
-import json
+import threading
+import time
 
+data = []
 # Create your views here.
 def scrap(request):
     PATH = "C:\Program Files (x86)\chromedriver.exe"
-    driver = webdriver.Chrome(PATH)
-        #amazon
-    # data = scrapAmazon(driver)
-    # return JsonResponse(data,safe=False)
-        #daraz
-    data = scrapDaraz(driver)
+    amazonDriver = webdriver.Chrome(PATH)
+    darazDriver = webdriver.Chrome(PATH)
+    # aliexpressDriver = webdriver.Chrome(PATH)
+    #     #daraz
+    # #scrapDaraz(driver)
+    y = threading.Thread(target=scrapDaraz,args=(darazDriver,))
+    y.start()
+   
+    #     #amazon
+    # #scrapAmazon(driver)
+    x = threading.Thread(target=scrapAmazon,args=(amazonDriver,))
+    x.start()
+   
+    #     #aliexpress
+    # scrapAliExpress(aliexpressDriver)
+    y.join()
+    x.join()
+
     return JsonResponse(data,safe=False)
 
+# def scrapAliExpress(driver):
+
+#     global data
+#     driver.get('https://www.aliexpress.com/')
+#     searchBar = driver.find_element_by_name('SearchText')
+#     searchBar.send_keys("Iphone 12")
+#     searchBar.send_keys(Keys.RETURN)
+#         #scroll down to load all the products
+#     time.sleep(2)
+#     driver.execute_script("window.scrollTo(0.6,document.body.scrollHeight)")
+#     # JIIxO
+#     # _1OUGS
+#     time.sleep(4)
+#     searchResults = WebDriverWait(driver,10).until(
+#     EC.presence_of_element_located((By.TAG_NAME,"div[class='JIIxO']"))
+#     )
+#     divs = searchResults.find_elements_by_tag_name("div[class='_1OUGS']")
+#     for product in divs:
+#         print(product.text)
+#     # count=0
+    # for product in searchResults:
+    #     count+=1
+    # print(count)
+
 def scrapDaraz(driver):
-    data = []
+    #data = []
+  
+    global data
     driver.get("https://www.daraz.pk/")
     searchBar=driver.find_element_by_id("q")
-    searchBar.send_keys("ram")
+    searchBar.send_keys("Iphone 12")
     searchBar.send_keys(Keys.RETURN)
     
     searchResults = WebDriverWait(driver,10).until(
@@ -62,18 +102,20 @@ def scrapDaraz(driver):
                     stars+=1
             ratings=str(stars)+" out of 5 stars"
             obj['ratings']=ratings
+            
         data.append(obj)
-    return data
+
 
 def scrapAmazon(driver):
-    data = []
+    #data = []
+    global data
     driver.get("https://www.amazon.com/")
 
 
     try:
         searchBar=driver.find_element_by_class_name('nav-search-field')
         searchBar=searchBar.find_element_by_tag_name('input')
-        searchBar.send_keys("ear buds")
+        searchBar.send_keys("Iphone 12")
         searchBar.send_keys(Keys.RETURN)
         searchResults= WebDriverWait(driver, 10).until(
             EC.presence_of_all_elements_located((By.TAG_NAME,"div[data-component-type='s-search-result']"))
@@ -115,15 +157,12 @@ def scrapAmazon(driver):
                         image = product.find_element_by_tag_name("img[class='s-image']").get_attribute('src')
                         #print(image)
                         obj['image_link']=image
-
-            data.append(obj)                        
+                        
+            data.append(obj)
+                                   
     except:
         driver.close()
-    print(len(data))
-    print("-------------------")
-    # jsonData = json.dumps(data)
-    # print(jsonData)
-    return data
+
     
 
         
