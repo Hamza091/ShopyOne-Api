@@ -19,18 +19,19 @@ def scrap(request):
     #     #daraz
     # #scrapDaraz(driver)
     y = threading.Thread(target=scrapDaraz,args=(darazDriver,))
-    y.start()
    
     #     #amazon
     # #scrapAmazon(driver)
     x = threading.Thread(target=scrapAmazon,args=(amazonDriver,))
+    y.start()
     x.start()
    
     #     #aliexpress
     # scrapAliExpress(aliexpressDriver)
     y.join()
     x.join()
-
+    amazonDriver.close()
+    darazDriver.close()
     return JsonResponse(data,safe=False)
 
 # def scrapAliExpress(driver):
