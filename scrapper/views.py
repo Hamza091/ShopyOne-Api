@@ -12,17 +12,19 @@ import time
 data = []
 # Create your views here.
 def scrap(request):
+    
+    searchText = request.GET.get('0')
     PATH = "C:\Program Files (x86)\chromedriver.exe"
     amazonDriver = webdriver.Chrome(PATH)
     darazDriver = webdriver.Chrome(PATH)
     # aliexpressDriver = webdriver.Chrome(PATH)
     #     #daraz
     # #scrapDaraz(driver)
-    y = threading.Thread(target=scrapDaraz,args=(darazDriver,))
+    y = threading.Thread(target=scrapDaraz,args=(darazDriver,searchText,))
    
     #     #amazon
     # #scrapAmazon(driver)
-    x = threading.Thread(target=scrapAmazon,args=(amazonDriver,))
+    x = threading.Thread(target=scrapAmazon,args=(amazonDriver,searchText,))
     y.start()
     x.start()
    
@@ -58,13 +60,13 @@ def scrap(request):
     #     count+=1
     # print(count)
 
-def scrapDaraz(driver):
+def scrapDaraz(driver,searchText):
     #data = []
   
     global data
     driver.get("https://www.daraz.pk/")
     searchBar=driver.find_element_by_id("q")
-    searchBar.send_keys("Iphone 12")
+    searchBar.send_keys(searchText)
     searchBar.send_keys(Keys.RETURN)
     
     searchResults = WebDriverWait(driver,10).until(
@@ -107,7 +109,7 @@ def scrapDaraz(driver):
         data.append(obj)
 
 
-def scrapAmazon(driver):
+def scrapAmazon(driver,searchText):
     #data = []
     global data
     driver.get("https://www.amazon.com/")
@@ -116,7 +118,7 @@ def scrapAmazon(driver):
     try:
         searchBar=driver.find_element_by_class_name('nav-search-field')
         searchBar=searchBar.find_element_by_tag_name('input')
-        searchBar.send_keys("Iphone 12")
+        searchBar.send_keys(searchText)
         searchBar.send_keys(Keys.RETURN)
         searchResults= WebDriverWait(driver, 10).until(
             EC.presence_of_all_elements_located((By.TAG_NAME,"div[data-component-type='s-search-result']"))
@@ -157,7 +159,7 @@ def scrapAmazon(driver):
                         obj['product_link']=a.get_attribute('href')
                         image = product.find_element_by_tag_name("img[class='s-image']").get_attribute('src')
                         #print(image)
-                        obj['image_link']=image
+                        obj['product_image']=image
                         
             data.append(obj)
                                    
